@@ -2,7 +2,7 @@
 
 You must install beautiful soup, either:
 
-    pip isntall -r requirements.txt
+    pip install -r requirements.txt
 	
 or 
 
@@ -30,7 +30,7 @@ to write the content to a file.
 
 # Summary
 
-Currently the parser outputs json format files. The file `parser.py` will parse the page looking for the appropriate parsers located in `parser_tables.py` for each table found. Currently parsing the tables:
+The parser is both a command line utility and also a libaray. The file `parser.py` is the main entry to the file and `parser_tables.py` has all the functions used to parse each specific table section. Currently the parser outputs json format files. The file `parser.py` will parse the page looking for the appropriate parsers located in `parser_tables.py` for each table found. Currently parsing the tables:
 
  - Defendants
  - Status
