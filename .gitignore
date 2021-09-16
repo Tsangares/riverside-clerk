@@ -9,3 +9,4 @@ to_fix/.DS_Store
 credentials
 *~
 __pycache__/
+parser/html_examples/

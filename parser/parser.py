@@ -62,7 +62,7 @@ if __name__ == "__main__":
         outFilename = args.output
         if '.json' not in outFilename.lower():
             outFilename += '.json'
-        json.dump(data,open(outFilename),indent=2)
+        json.dump(data,open(outFilename,'w+'),indent=2)
     else:
         pp.pprint(data)
     
