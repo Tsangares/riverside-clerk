@@ -7,3 +7,6 @@ working_scrapers/.DS_Store
 to_fix/.DS_Store
 .DS_Store
 credentials
+*~
+__pycache__/
+parser/html_examples/
