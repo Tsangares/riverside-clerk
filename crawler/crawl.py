@@ -3,9 +3,11 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException
 import time
 import os
 import pandas as pd
+import glob
 
 def get_browser():
     chrome_options = Options()
@@ -21,10 +23,18 @@ BUCKET = configs['BUCKET']
 FAILURE_SNS_TOPIC = configs['FAILURE_SNS_TOPIC']
 PASSWORD = configs['PASSWORD']
 USERNAME = configs['USERNAME']
+FILENAME = configs['FILENAME']
 
 #Load list of case numbers
 # os.chdir(r"Z:\Claremont\Riverside Scraping")
-df = pd.read_csv('/data/casenumbers.csv',skiprows=0, encoding = "ISO-8859-1")
+df = pd.read_csv(FILENAME,skiprows=0, encoding = "ISO-8859-1")
+
+def get_crawled_casenumbers():
+    return [i.split('_')[1].split('.')[0] for i in glob.glob('/data/output/*.html')]
+
+def get_errors():
+    return [i.split('.')[0] for i in glob.glob('/data/errors/*.html')]
+
 
 
 #List names
@@ -47,7 +57,16 @@ password.send_keys(Keys.ENTER)
 #Go to search site
 browser.get('https://public-access.riverside.courts.ca.gov/OpenAccess/CaseSearch.asp')
 
-for case in df['Case_Number']:
+# for case in df[df['CourtNumber'].notnull()]['CourtNumber']:
+for case in df[df['CourtNumber'].notnull()]['CourtNumber'].sample(frac=1):
+    crawled_casenumbers = get_crawled_casenumbers()
+    crawled_errors = get_errors()
+    if case in crawled_casenumbers:
+        print('%s already crawled, skipping' % case)
+        continue
+    if case in crawled_errors:
+        print('%s already failed, skipping' % case)
+        continue
     print(case)
     time.sleep(1)
     searchbar=browser.find_element_by_css_selector('#txtCaseNumber')
@@ -64,7 +83,12 @@ for case in df['Case_Number']:
         print("No continue button found.")
  
     #At this stage it shows the results. I get from the layout that in some cases, there may be more than one result. This may only be if name is searched by. Will double check with Greg.  
-    caselink=browser.find_element_by_xpath("//*[text() = '%s']"%(case))
+    try:
+        caselink=browser.find_element_by_xpath("//*[text() = '%s']"%(case))
+    except NoSuchElementException as e:
+        open('/data/errors/%s.html' % case,'w').write(browser.page_source)
+        print("Error with case %s" % case)
+        continue
     browser.execute_script("arguments[0].scrollIntoView();", caselink)
     Hover = ActionChains(browser).move_to_element(caselink)
     #Clicking on the link will create a popup. Need to use window_handles to switch back and forth
