@@ -23,6 +23,7 @@ RUN pip install pandas numpy boto3 boto joblib requests ipdb awscli watchtower b
 
 # Begin Jeff work
 ADD crawler/ /opt/crawler
+ADD parser/ /opt/parser
 #ADD conf.env /opt/
 ADD credentials /root/.aws/credentials
 

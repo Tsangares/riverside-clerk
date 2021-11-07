@@ -5,6 +5,8 @@ Parser for Riverside case project.
 from bs4 import BeautifulSoup
 from parse_tables import *
 import pprint,json
+import pandas as pd
+import glob
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -48,21 +50,29 @@ if __name__ == "__main__":
     #Implement cli arguments
     import argparse 
     parser = argparse.ArgumentParser(description='Parse case documents from Riverside.')
-    parser.add_argument("filename",type=str,help="The input file to parse.")
-    parser.add_argument("output",nargs='?',type=str,help="Output json file to save to.",default=None)
+    parser.add_argument("parse",help="Ignore this ")
+    parser.add_argument("--filename",type=str,help="The input file to parse.")
+    parser.add_argument("--output",type=str,help="Output json file to save to.",default=None)
     #parser.add_argument("--distance",action="store_true", help="Annotate distance")
     args = parser.parse_args()
+    print(args)
 
     #Parse given html file & run parser
-    html = open(args.filename,encoding="ISO-8859-1").read()
-    html = unicodedata.normalize("NFKD", html)
-    data = parse_case_document(html)
+    files = glob.glob(args.filename + '*')
+    out = []
+    for fn in files:
+        html = open(fn,encoding="ISO-8859-1").read()
+        html = unicodedata.normalize("NFKD", html)
+        print(len(out))
+        data = parse_case_document(html)
+        out.append(data)
 
+    df = pd.DataFrame(out)
     if args.output is not None:
         outFilename = args.output
-        if '.json' not in outFilename.lower():
-            outFilename += '.json'
-        json.dump(data,open(outFilename,'w+'),indent=2)
+        if '.csv' not in outFilename.lower():
+            outFilename += '.csv'
+        pd.to_csv(outFilename, index=False, encodint='utf8')
     else:
         pp.pprint(data)
     

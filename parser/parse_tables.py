@@ -20,7 +20,11 @@ def parse_defendants(table):
                 cache[j][1] = text
             else:
                 aliases.append(text.replace('ALIAS: ','').title())
-    return dict(cache) | {'aliases': aliases}
+    if cache:
+        return dict(cache)
+    else:
+        {'aliases': aliases}
+    #return dict(cache) | {'aliases': aliases}
 
 #Go through the status table and collect all info into a dict.
 def parse_status(table):
