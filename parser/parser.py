@@ -69,12 +69,13 @@ def parseFile(filename,outPath=None):
         return 1000
     if outPath is not None:
         if os.path.isdir(outPath):
-            filename = '.'.join(filename.split('/')[-1].split('.')[:-1]+['csv'])
+            filename = '.'.join(filename.split('/')[-1].split('.')[:-1]+['json'])
             outPath= os.path.join(outPath,filename)
-        elif '.csv' not in outPath.lower():
-            outPath += '.csv'
+        elif '.json' not in outPath.lower():
+            outPath += '.json'
         logging.info(f'Saving {outPath}')
-        pd.to_csv(outFilename, index=False, encodint='utf8')
+        json.dump(data,open(outPath,'w+'),indent=2)
+        #pd.DataFrame.to_csv(outFilename, index=False, encodint='utf8')
     else:
         pp.pprint(data)
     return True
