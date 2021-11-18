@@ -20,6 +20,18 @@ or just
 
 Will output the parsed html file.
 
+# Parse a directory
+
+You can parse a whole directory by passing a directory full of `htm` or `html` files into it, and giving and output directory to put json files. Here is an exmaple where all the html files are in `data/output`. The path `data/json` will be created if it is not there.
+
+    python parser.py data/output data/json
+	
+## Mutliprocessing
+
+To multiprocess a directory the parsing just pass the number of processors,
+
+	python parser.py data/output data/json --processors 8
+
 ## Write to file
 
 To write to a file use

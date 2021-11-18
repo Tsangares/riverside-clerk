@@ -6,13 +6,16 @@ from bs4 import BeautifulSoup
 from parse_tables import *
 from itertools import repeat
 from multiprocessing import Pool
-import pprint,json,os
+import pprint,json,os,time
 
 pp = pprint.PrettyPrinter(indent=2)
 
 def parse_case_document(html):
     if "500 - Internal server error." in html:
-        return None
+        return 500
+    if 'Insufficient Security Settings' in html:
+        return -1
+            
     #if html is a filename, open & read content
     if '.htm' in html.lower(): html=open(html).read()
 
@@ -53,8 +56,11 @@ def parseFile(filename,outPath=None):
     html = unicodedata.normalize("NFKD", html)
     try:
         data = parse_case_document(html)
-        if data is None:
-            logging.warning(f"File has no contents: {filename}")
+        if data == 500:
+            logging.warning(f"File has no contents [Error 500]: {filename}")
+            return False
+        elif data == -1:
+            logging.warning(f"Insufficient privileges [Error -1]: {filename}")
             return False
     except Exception as e:
         logging.error(f"Failed on {filename}")
