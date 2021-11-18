@@ -4,11 +4,15 @@ Parser for Riverside case project.
 '''
 from bs4 import BeautifulSoup
 from parse_tables import *
-import pprint,json
+from itertools import repeat
+from multiprocessing import Pool
+import pprint,json,os
 
 pp = pprint.PrettyPrinter(indent=2)
 
 def parse_case_document(html):
+    if "500 - Internal server error." in html:
+        return None
     #if html is a filename, open & read content
     if '.htm' in html.lower(): html=open(html).read()
 
@@ -42,29 +46,56 @@ def parse_case_document(html):
         'fine_information': parse_fine_information(get_content('- Fine Information'))
     }
 
+#Returns true on a successful parse
+def parseFile(filename,outPath=None):
+    #Parse a single html file
+    html = open(filename,encoding="ISO-8859-1").read()
+    html = unicodedata.normalize("NFKD", html)
+    try:
+        data = parse_case_document(html)
+        if data is None:
+            logging.warning(f"File has no contents: {filename}")
+            return False
+    except Exception as e:
+        logging.error(f"Failed on {filename}")
+        raise e
+    if outPath is not None:
+        if os.path.isdir(outPath):
+            filename = '.'.join(filename.split('/')[-1].split('.')[:-1]+['json'])
+            outPath= os.path.join(outPath,filename)
+        elif '.json' not in outPath.lower():
+            outPath += '.json'
+        logging.info(f'Saving {outPath}')
+        json.dump(data,open(outPath,'w+'),indent=2)
+    else:
+        pp.pprint(data)
+    return True
+    
 
 #If run from cli
 if __name__ == "__main__":
     #Implement cli arguments
     import argparse 
     parser = argparse.ArgumentParser(description='Parse case documents from Riverside.')
-    parser.add_argument("filename",type=str,help="The input file to parse.")
-    parser.add_argument("output",nargs='?',type=str,help="Output json file to save to.",default=None)
-    #parser.add_argument("--distance",action="store_true", help="Annotate distance")
+    parser.add_argument("input",type=str,help="Either a file or directory to parse")
+    parser.add_argument("output",nargs='?',type=str,help="Either a file or directory to output files.",default=None)
+    parser.add_argument("--processors",type=int,help="Use this many processes when multiprocessing.",default=1)
     args = parser.parse_args()
-
+    outPath = args.output
+    path = args.input
     #Parse given html file & run parser
-    html = open(args.filename,encoding="ISO-8859-1").read()
-    html = unicodedata.normalize("NFKD", html)
-    data = parse_case_document(html)
-
-    if args.output is not None:
-        outFilename = args.output
-        if '.json' not in outFilename.lower():
-            outFilename += '.json'
-        json.dump(data,open(outFilename,'w+'),indent=2)
+    is_directory = os.path.isdir(path)
+    if is_directory:
+        #Parse a directory of html files
+        if outPath is None:
+            raise Exception("When parsing a directory an output path must be given.")
+        
+        files = [os.path.join(path,f) for f in os.listdir(path) if '.htm' in f.lower()]
+        os.makedirs(outPath,exist_ok=True)
+        with Pool(args.processors) as pool:
+            success = pool.starmap(parseFile,zip(files,repeat(outPath)))
+        failed_files = [filename for filename,parsed in zip(files,success) if not success]
+        json.dump(failed_files,open(f'log_parser_{int(time.time())}.txt','w+'),indent=2)
     else:
-        pp.pprint(data)
-    
-
+        parseFile(path,outPath)
     

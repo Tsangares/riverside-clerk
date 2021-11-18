@@ -20,7 +20,9 @@ def parse_defendants(table):
                 cache[j][1] = text
             else:
                 aliases.append(text.replace('ALIAS: ','').title())
-    return dict(cache) | {'aliases': aliases}
+    output = dict(cache)
+    output['aliases'] = aliases
+    return output
 
 #Go through the status table and collect all info into a dict.
 def parse_status(table):
@@ -57,8 +59,9 @@ def parse_status(table):
             else:
                 #Values
                 cache[count][1] = text
-                count += 1 
-    return output | dict(cache)
+                count += 1
+    output.update(dict(cache))
+    return output
 
 #A dict of two lists of dictionaries
 def parse_charges(table):
@@ -163,6 +166,6 @@ def parse_fine_information(table):
             titles = values
         else:
             outputs.append({k:v for k,v in zip(titles,values)})
-    
-    return output | {'fines': outputs}
+    output['fines'] = outputs
+    return output
 
