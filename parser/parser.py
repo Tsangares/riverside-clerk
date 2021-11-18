@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from parse_tables import *
 from itertools import repeat
 from multiprocessing import Pool
-import pprint,json,os,time
+import pprint,json,os,time,csv
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -14,7 +14,7 @@ def parse_case_document(html):
     if "500 - Internal server error." in html:
         return 500
     if 'Insufficient Security Settings' in html:
-        return -1
+        return 403
             
     #if html is a filename, open & read content
     if '.htm' in html.lower(): html=open(html).read()
@@ -58,13 +58,13 @@ def parseFile(filename,outPath=None):
         data = parse_case_document(html)
         if data == 500:
             logging.warning(f"File has no contents [Error 500]: {filename}")
-            return False
+            return 500
         elif data == -1:
-            logging.warning(f"Insufficient privileges [Error -1]: {filename}")
-            return False
+            logging.warning(f"Insufficient privileges [Error 403]: {filename}")
+            return 403
     except Exception as e:
         logging.error(f"Failed on {filename}")
-        raise e
+        return 1000
     if outPath is not None:
         if os.path.isdir(outPath):
             filename = '.'.join(filename.split('/')[-1].split('.')[:-1]+['json'])
@@ -100,8 +100,13 @@ if __name__ == "__main__":
         os.makedirs(outPath,exist_ok=True)
         with Pool(args.processors) as pool:
             success = pool.starmap(parseFile,zip(files,repeat(outPath)))
-        failed_files = [filename for filename,parsed in zip(files,success) if not success]
-        json.dump(failed_files,open(f'log_parser_{int(time.time())}.txt','w+'),indent=2)
+
+        #Write filed files to csv
+        failed_files = [{'filename': filename,'error': error} for filename,error in zip(files,success) if error != True]
+        with open(f'log_parser_{int(time.time())}.csv','w+') as f:
+            writer = csv.DictWriter(f,fieldnames=['filename', 'error'])
+            writer.writeheader()
+            writer.writerows(failed_files)
     else:
         parseFile(path,outPath)
     

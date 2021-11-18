@@ -65,6 +65,7 @@ def parse_status(table):
 
 #A dict of two lists of dictionaries
 def parse_charges(table):
+    if table is None: return None
     output = {}
     title = None
     columnTitles = []
@@ -86,6 +87,7 @@ def parse_charges(table):
 
 #Parsing probation
 def parse_probation(table):
+    if table is None: return None
     if table.find('table') is None:
         return table.text
     else:
@@ -95,6 +97,7 @@ def parse_probation(table):
 
 #Parse other cases; simple table with columns.
 def parse_other_cases(table):
+    if table is None: return None
     output = []
     titles = []
     #Cleaning when converting Latin encoding to UTF-8.
@@ -111,6 +114,7 @@ def parse_other_cases(table):
     
 #Parsing the actions and minutes section
 def parse_actions_minutes(table):
+    if table is None: return None
     table = table.find_next_sibling('table')
     output = []
     titles = []
@@ -132,6 +136,7 @@ def parse_actions_minutes(table):
     return output
 
 def parse_fine_information(table):
+    if table is None: return None
     output = {}
     key = None
     for i,row in enumerate(table.find_all('tr')):

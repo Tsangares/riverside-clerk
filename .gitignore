@@ -11,3 +11,4 @@ credentials
 __pycache__/
 parser/html_examples/
 env/
+log_parser*
