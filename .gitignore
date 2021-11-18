@@ -10,3 +10,4 @@ credentials
 *~
 __pycache__/
 parser/html_examples/
+env/
