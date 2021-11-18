@@ -7,6 +7,8 @@ from parse_tables import *
 from itertools import repeat
 from multiprocessing import Pool
 import pprint,json,os,time,csv
+import pandas as pd
+import glob
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -67,12 +69,12 @@ def parseFile(filename,outPath=None):
         return 1000
     if outPath is not None:
         if os.path.isdir(outPath):
-            filename = '.'.join(filename.split('/')[-1].split('.')[:-1]+['json'])
+            filename = '.'.join(filename.split('/')[-1].split('.')[:-1]+['csv'])
             outPath= os.path.join(outPath,filename)
-        elif '.json' not in outPath.lower():
-            outPath += '.json'
+        elif '.csv' not in outPath.lower():
+            outPath += '.csv'
         logging.info(f'Saving {outPath}')
-        json.dump(data,open(outPath,'w+'),indent=2)
+        pd.to_csv(outFilename, index=False, encodint='utf8')
     else:
         pp.pprint(data)
     return True

@@ -5,4 +5,4 @@ DOCKER_IMAGE=clerk
 LOCAL_PATH_TO_DATA=/home/ec2-user/riverside-clerk
 # Change this directory to match where your vesion of input data are
 
-docker run -i -t -v $LOCAL_PATH_TO_DATA/conf.env:/opt/conf.env -v $LOCAL_PATH_TO_DATA/data/:/data/ --rm $DOCKER_IMAGE crawl /data/casenumbers.csv
+docker run -i -t -v $LOCAL_PATH_TO_DATA/conf.env:/opt/conf.env -v $LOCAL_PATH_TO_DATA/data/:/data/ --rm $DOCKER_IMAGE parse  --filename /data/output/ --output /data/parsed.csv

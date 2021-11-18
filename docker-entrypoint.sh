@@ -8,3 +8,11 @@ if [ "$1" = 'crawl' ]; then
 	python ./crawl.py $@;
     exit 0
 fi
+
+if [ "$1" = 'parse' ]; then
+	echo "$@"
+    export PYTHONPATH="${PYTHONPATH}:/opt/" && \
+        cd /opt/parser/ && \
+	python ./parser.py $@;
+    exit 0
+fi
